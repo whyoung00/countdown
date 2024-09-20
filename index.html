@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDC Orlando 2024 Countdown</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #000000;
+            color: #ffffff;
+        }
+        .container {
+            text-align: center;
+            background-color: #111111;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,255,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #00ff00;
+        }
+        .countdown {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+        }
+        .calendar {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+        }
+        .calendar-item {
+            text-align: center;
+        }
+        .calendar-number {
+            font-size: 2rem;
+            font-weight: bold;
+            background-color: #00ff00;
+            color: #000000;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+        }
+        .progress-bar {
+            background-color: #333333;
+            height: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress {
+            background-color: #00ff00;
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>EDC Orlando 2024 Countdown</h1>
+        <div id="countdown" class="countdown"></div>
+        <div class="calendar">
+            <div class="calendar-item">
+                <div id="days" class="calendar-number"></div>
+                <div>Days</div>
+            </div>
+            <div class="calendar-item">
+                <div id="weeks" class="calendar-number"></div>
+                <div>Weeks</div>
+            </div>
+            <div class="calendar-item">
+                <div id="weekendDays" class="calendar-number"></div>
+                <div>Weekend Days</div>
+            </div>
+        </div>
+        <div>
+            <h3>Progress</h3>
+            <div class="progress-bar">
+                <div id="progress" class="progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateCountdown() {
+            const now = moment();
+            const edcStart = moment('2024-11-08');
+            const totalDays = moment('2024-11-08').diff(moment(), 'days');
+            const days = edcStart.diff(now, 'days');
+            const weeks = Math.floor(days / 7);
+            
+            // Calculate weekend days
+            let weekendDays = 0;
+            let currentDate = now.clone();
+            while (currentDate.isBefore(edcStart)) {
+                if (currentDate.day() === 0 || currentDate.day() === 6) {
+                    weekendDays++;
+                }
+                currentDate.add(1, 'day');
+            }
+
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.innerHTML = `
+                <p>Days until EDC Orlando: ${days}</p>
+                <p>Weeks until EDC Orlando: ${weeks}</p>
+                <p>Weekend days until EDC Orlando: ${weekendDays}</p>
+            `;
+
+            document.getElementById('days').textContent = days;
+            document.getElementById('weeks').textContent = weeks;
+            document.getElementById('weekendDays').textContent = weekendDays;
+
+            const progressPercentage = 100 - (days / totalDays * 100);
+            document.getElementById('progress').style.width = `${progressPercentage}%`;
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000 * 60 * 60); // Update every hour
+    </script>
+</body>
+</html>
