@@ -66,11 +66,78 @@
             height: 100%;
             transition: width 0.5s ease-in-out;
         }
+        .visualization-toggle {
+            margin-bottom: 20px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #00ff00;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        #toggleLabel {
+            margin-left: 10px;
+            vertical-align: super;
+        }
+        .tally-visualization {
+            font-size: 24px;
+            line-height: 1.5;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>EDC Orlando 2024 Countdown</h1>
+        <h3 id="progressHeading">Progress</h3>
+        <div class="visualization-toggle">
+            <label class="switch">
+                <input type="checkbox" id="visualizationToggle" checked>
+                <span class="slider round"></span>
+            </label>
+            <span id="toggleLabel">Progress Bar</span>
+        </div>
+        <div id="progressBar" class="progress-bar">
+            <div id="progress" class="progress"></div>
+        </div>
+        <div id="tallyVisualization" class="tally-visualization" style="display: none;"></div>
         <div id="countdown" class="countdown"></div>
         <div class="calendar">
             <div class="calendar-item">
@@ -86,58 +153,88 @@
                 <div>Weekend Days</div>
             </div>
         </div>
-        <div>
-            <h3>Progress</h3>
-            <div class="progress-bar">
-                <div id="progress" class="progress"></div>
-            </div>
-        </div>
     </div>
 
     <script>
-        function updateCountdown() {
-            const now = moment();
-            const edcStart = moment('2024-11-08');
-            const totalDays = moment('2024-11-08').diff(moment(), 'days');
-            const days = edcStart.diff(now, 'days');
-            const weeks = Math.floor(days / 7);
-            
-            // Calculate weekend days
-            let weekendDays = 0;
-            let currentDate = now.clone();
-            while (currentDate.isBefore(edcStart)) {
-                if (currentDate.day() === 0 || currentDate.day() === 6) {
-                    weekendDays++;
-                }
-                currentDate.add(1, 'day');
+    function updateCountdown() {
+        const now = moment();
+        const edcStart = moment('2024-11-08');
+        const countdownStart = moment('2023-11-08'); // One year before the event
+        
+        const totalDays = edcStart.diff(countdownStart, 'days');
+        const daysPassedSinceStart = now.diff(countdownStart, 'days');
+        const daysLeft = edcStart.diff(now, 'days');
+        const weeks = Math.floor(daysLeft / 7);
+        
+        let weekendDays = 0;
+        let currentDate = now.clone();
+        while (currentDate.isBefore(edcStart)) {
+            if (currentDate.day() === 0 || currentDate.day() === 6) {
+                weekendDays++;
             }
+            currentDate.add(1, 'day');
+        }
 
-            const countdownElement = document.getElementById('countdown');
-            countdownElement.innerHTML = `
-                <p>Days until EDC Orlando: ${days}</p>
-                <p>Weeks until EDC Orlando: ${weeks}</p>
-                <p>Weekend days until EDC Orlando: ${weekendDays}</p>
-            `;
+        const countdownElement = document.getElementById('countdown');
+        countdownElement.innerHTML = `
+            <p>Days until EDC Orlando: ${daysLeft}</p>
+            <p>Weeks until EDC Orlando: ${weeks}</p>
+            <p>Weekend days until EDC Orlando: ${weekendDays}</p>
+        `;
 
-            document.getElementById('days').textContent = days;
-            document.getElementById('weeks').textContent = weeks;
-            document.getElementById('weekendDays').textContent = weekendDays;
+        document.getElementById('days').textContent = daysLeft;
+        document.getElementById('weeks').textContent = weeks;
+        document.getElementById('weekendDays').textContent = weekendDays;
 
-            const progressPercentage = 100 - (days / totalDays * 100);
+        updateVisualization(daysLeft, totalDays, daysPassedSinceStart);
+    }
+
+    function updateVisualization(daysLeft, totalDays, daysPassedSinceStart) {
+        const isProgressBar = document.getElementById('visualizationToggle').checked;
+        const progressBar = document.getElementById('progressBar');
+        const tallyVisualization = document.getElementById('tallyVisualization');
+        document.getElementById('progressHeading').style.display = isProgressBar ? 'block' : 'none';
+
+        if (isProgressBar) {
+            progressBar.style.display = 'block';
+            tallyVisualization.style.display = 'none';
+            const progressPercentage = (daysPassedSinceStart / totalDays) * 100;
             document.getElementById('progress').style.width = `${progressPercentage}%`;
+        } else {
+            progressBar.style.display = 'none';
+            tallyVisualization.style.display = 'block';
+            const tallyGroups = Math.floor(daysLeft / 7);
+            const remainingTallies = daysLeft % 7;
+            let tallyHTML = '';
+            for (let i = 0; i < tallyGroups; i++) {
+                tallyHTML += '|||||<span style="color: #00ff00;">||</span> ';
+            }
+            // Handle remaining tallies
+            for (let i = 0; i < remainingTallies; i++) {
+                if (i === 5 || i === 6) {
+                    tallyHTML += '<span style="color: #00ff00;">|</span>';
+                } else {
+                    tallyHTML += '|';
+                }
+            }
+            tallyVisualization.innerHTML = tallyHTML;
+        }
+    }
+
+    // Wrap initialization code in DOMContentLoaded event listener
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleElement = document.getElementById('visualizationToggle');
+        if (toggleElement) {
+            toggleElement.addEventListener('change', function() {
+                const toggleLabel = document.getElementById('toggleLabel');
+                toggleLabel.textContent = this.checked ? 'Progress Bar' : 'Tally Visualization';
+                updateCountdown();
+            });
         }
 
         updateCountdown();
         setInterval(updateCountdown, 1000 * 60 * 60); // Update every hour
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('Service worker registered.', reg))
-                    .catch(err => console.log('Service worker registration failed.', err));
-            });
-        }
+    });
     </script>
 </body>
 </html>
