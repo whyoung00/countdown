@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EDC Orlando 2024 Countdown</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <style>
         body {
@@ -341,6 +344,9 @@
         const list = document.getElementById(`artistList-${date}`);
         const artists = Array.from(list.getElementsByTagName('li')).map(li => li.textContent.split(' Remove')[0]);
         artistStorage[date] = artists; // Save to in-memory storage for preview
+        
+        // If not in preview mode, uncomment the following line to use localStorage
+        // localStorage.setItem(`artists-${date}`, JSON.stringify(artists));
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -358,6 +364,15 @@
 
         initializeDayBreakdown();
     });
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator && !window.location.href.includes('github.io')) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service worker registered.', reg))
+            .catch(err => console.log('Service worker registration failed.', err));
+    });
+}
     </script>
 </body>
 </html>
