@@ -121,6 +121,20 @@
             line-height: 1.5;
             margin-top: 20px;
         }
+        .weather-forecast {
+            margin-top: 2rem;
+            text-align: left;
+        }
+        .weather-day {
+            background-color: #222;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .weather-day h4 {
+            color: #00ff00;
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
@@ -153,13 +167,17 @@
                 <div>Weekend Days</div>
             </div>
         </div>
+        <div class="weather-forecast">
+            <h3>EDC Orlando Weather Forecast</h3>
+            <div id="weatherData"></div>
+        </div>
     </div>
 
     <script>
     function updateCountdown() {
         const now = moment();
         const edcStart = moment('2024-11-08');
-        const countdownStart = moment('2023-11-08'); // One year before the event
+        const countdownStart = moment('2023-11-08');
         
         const totalDays = edcStart.diff(countdownStart, 'days');
         const daysPassedSinceStart = now.diff(countdownStart, 'days');
@@ -209,7 +227,6 @@
             for (let i = 0; i < tallyGroups; i++) {
                 tallyHTML += '|||||<span style="color: #00ff00;">||</span> ';
             }
-            // Handle remaining tallies
             for (let i = 0; i < remainingTallies; i++) {
                 if (i === 5 || i === 6) {
                     tallyHTML += '<span style="color: #00ff00;">|</span>';
@@ -221,7 +238,47 @@
         }
     }
 
-    // Wrap initialization code in DOMContentLoaded event listener
+    async function fetchWeatherForecast() {
+        const apiKey = '47875c2b6fbbf1074f726586868c1993';
+        const lat = 28.5392;
+        const lon = -81.3824;
+        const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=current,minutely,hourly,alerts&appid=${apiKey}&units=metric`;
+        
+        // Using a public CORS proxy
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+
+        try {
+            const response = await fetch(proxyUrl + encodeURIComponent(url));
+            const data = await response.json();
+            displayWeatherForecast(data);
+        } catch (error) {
+            console.error('Error fetching weather data:', error);
+        }
+    }
+
+    function displayWeatherForecast(data) {
+        const weatherData = document.getElementById('weatherData');
+        weatherData.innerHTML = '';
+
+        const edcDates = ['2024-11-08', '2024-11-09', '2024-11-10'];
+        
+        edcDates.forEach((date, index) => {
+            const dayForecast = data.daily[index];
+            if (dayForecast) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'weather-day';
+                dayElement.innerHTML = `
+                    <h4>${moment(date).format('dddd, MMMM D')}</h4>
+                    <p>Temperature: ${dayForecast.temp.day}°C (Low: ${dayForecast.temp.min}°C, High: ${dayForecast.temp.max}°C)</p>
+                    <p>Weather: ${dayForecast.weather[0].description}</p>
+                    <p>Humidity: ${dayForecast.humidity}%</p>
+                    <p>Wind Speed: ${dayForecast.wind_speed} m/s</p>
+                `;
+                weatherData.appendChild(dayElement);
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const toggleElement = document.getElementById('visualizationToggle');
         if (toggleElement) {
@@ -234,6 +291,10 @@
 
         updateCountdown();
         setInterval(updateCountdown, 1000 * 60 * 60); // Update every hour
+
+        fetchWeatherForecast();
+        // Update weather forecast every hour
+        setInterval(fetchWeatherForecast, 1000 * 60 * 60);
     });
     </script>
 </body>
