@@ -9,7 +9,65 @@
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <style>
-        /* ... (keep existing styles) ... */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #00ff00;
+        }
+        .countdown {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            background-color: #333;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress {
+            background-color: #00ff00;
+            height: 100%;
+            width: 0;
+            transition: width 0.5s ease-in-out;
+        }
+        .tally-visualization {
+            font-size: 24px;
+            line-height: 1.5;
+            margin-top: 20px;
+        }
+        .weather-forecast, .artist-list {
+            background-color: #111;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .artist-input {
+            margin-top: 10px;
+        }
+        input[type="text"], button {
+            padding: 5px 10px;
+        }
+        button {
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #00cc00;
+        }
+        .day-section {
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
@@ -42,16 +100,7 @@
         '2024-11-10': []
     };
 
-    function loadFromLocalStorage() {
-        const storedData = localStorage.getItem('artistStorage');
-        if (storedData) {
-            artistStorage = JSON.parse(storedData);
-        }
-    }
-
-    function saveToLocalStorage() {
-        localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
-    }
+    let lastSyncTimestamp = 0;
 
     async function fetchArtists() {
         try {
@@ -64,13 +113,10 @@
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            artistStorage = data.record.artists || data.record;
-            saveToLocalStorage();
+            mergeArtistData(data.record);
             updateArtistLists();
         } catch (error) {
             console.error('Error fetching artists:', error);
-            loadFromLocalStorage();
-            updateArtistLists();
         }
     }
 
@@ -82,15 +128,24 @@
                     'Content-Type': 'application/json',
                     'X-Master-Key': JSONBIN_API_KEY
                 },
-                body: JSON.stringify({ artists: artistStorage })
+                body: JSON.stringify({
+                    artists: artistStorage,
+                    lastUpdated: Date.now()
+                })
             });
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            saveToLocalStorage();
+            lastSyncTimestamp = Date.now();
         } catch (error) {
             console.error('Error saving artists:', error);
-            saveToLocalStorage();
+        }
+    }
+
+    function mergeArtistData(remoteData) {
+        if (remoteData.lastUpdated > lastSyncTimestamp) {
+            artistStorage = remoteData.artists;
+            lastSyncTimestamp = remoteData.lastUpdated;
         }
     }
 
@@ -100,19 +155,109 @@
     }
 
     function updateCountdown() {
-        // ... (keep existing countdown logic) ...
+        const now = moment();
+        const edcStart = moment('2024-11-08');
+        const countdownStart = moment('2023-11-08');
+        
+        const totalDays = edcStart.diff(countdownStart, 'days');
+        const daysPassedSinceStart = now.diff(countdownStart, 'days');
+        const daysLeft = edcStart.diff(now, 'days');
+        const weeks = Math.floor(daysLeft / 7);
+        
+        let weekendDays = 0;
+        let currentDate = now.clone();
+        while (currentDate.isBefore(edcStart)) {
+            if (currentDate.day() === 0 || currentDate.day() === 6) {
+                weekendDays++;
+            }
+            currentDate.add(1, 'day');
+        }
+
+        const countdownElement = document.getElementById('countdown');
+        countdownElement.innerHTML = `
+            <p>Days until EDC Orlando: ${daysLeft}</p>
+            <p>Weeks until EDC Orlando: ${weeks}</p>
+            <p>Weekend days until EDC Orlando: ${weekendDays}</p>
+        `;
+
+        updateVisualization(daysLeft, totalDays, daysPassedSinceStart);
     }
 
     function updateVisualization(daysLeft, totalDays, daysPassedSinceStart) {
-        // ... (keep existing visualization logic) ...
+        const isProgressBar = document.getElementById('visualizationToggle').checked;
+        const progressBar = document.getElementById('progressBar');
+        const tallyVisualization = document.getElementById('tallyVisualization');
+        document.getElementById('progressHeading').style.display = isProgressBar ? 'block' : 'none';
+
+        if (isProgressBar) {
+            progressBar.style.display = 'block';
+            tallyVisualization.style.display = 'none';
+            const progressPercentage = (daysPassedSinceStart / totalDays) * 100;
+            document.getElementById('progress').style.width = `${progressPercentage}%`;
+        } else {
+            progressBar.style.display = 'none';
+            tallyVisualization.style.display = 'block';
+            const tallyGroups = Math.floor(daysLeft / 7);
+            const remainingTallies = daysLeft % 7;
+            let tallyHTML = '';
+            for (let i = 0; i < tallyGroups; i++) {
+                tallyHTML += '|||||<span style="color: #00ff00;">||</span> ';
+            }
+            for (let i = 0; i < remainingTallies; i++) {
+                if (i === 5 || i === 6) {
+                    tallyHTML += '<span style="color: #00ff00;">|</span>';
+                } else {
+                    tallyHTML += '|';
+                }
+            }
+            tallyVisualization.innerHTML = tallyHTML;
+        }
     }
 
     function fetchWeatherForecast() {
-        // ... (keep existing weather forecast logic) ...
+        // Simulated weather data for preview
+        const simulatedWeather = {
+            daily: [
+                { temp: { day: 75, min: 65, max: 85 }, weather: [{ description: 'Partly cloudy' }], humidity: 60, wind_speed: 5 },
+                { temp: { day: 78, min: 68, max: 88 }, weather: [{ description: 'Sunny' }], humidity: 55, wind_speed: 6 },
+                { temp: { day: 76, min: 66, max: 86 }, weather: [{ description: 'Clear sky' }], humidity: 58, wind_speed: 4 }
+            ]
+        };
+        return simulatedWeather;
     }
 
     function initializeDayBreakdown() {
-        // ... (keep existing day breakdown logic) ...
+        const dayBreakdown = document.getElementById('dayBreakdown');
+        const edcDates = ['2024-11-08', '2024-11-09', '2024-11-10'];
+        const weatherData = fetchWeatherForecast();
+        
+        edcDates.forEach((date, index) => {
+            const daySection = document.createElement('div');
+            daySection.className = 'day-section';
+            const dayForecast = weatherData.daily[index];
+            
+            daySection.innerHTML = `
+                <h2>${moment(date).format('dddd, MMMM D')}</h2>
+                <div class="weather-forecast">
+                    <h3>Weather Forecast</h3>
+                    <p>Temperature: ${Math.round(dayForecast.temp.day)}°F (Low: ${Math.round(dayForecast.temp.min)}°F, High: ${Math.round(dayForecast.temp.max)}°F)</p>
+                    <p>Weather: ${dayForecast.weather[0].description}</p>
+                    <p>Humidity: ${dayForecast.humidity}%</p>
+                    <p>Wind Speed: ${Math.round(dayForecast.wind_speed)} mph</p>
+                </div>
+                <div class="artist-list">
+                    <h3>Your Artists</h3>
+                    <ul id="artistList-${date}"></ul>
+                    <div class="artist-input">
+                        <input type="text" id="artistInput-${date}" placeholder="Enter artist name">
+                        <button onclick="addArtist('${date}')">Add</button>
+                    </div>
+                </div>
+            `;
+            dayBreakdown.appendChild(daySection);
+        });
+
+        updateArtistLists();
     }
 
     function updateArtistLists() {
@@ -163,9 +308,8 @@
         setInterval(updateCountdown, 1000 * 60 * 60); // Update countdown every hour
 
         initializeDayBreakdown();
-        loadFromLocalStorage(); // Load data from local storage first
-        syncArtists(); // Then try to sync with JSONbin
-        setInterval(syncArtists, 1000 * 60); // Try to sync every minute
+        syncArtists(); // Initial sync of artists
+        setInterval(syncArtists, 1000 * 10); // Sync artists every 10 seconds
 
         // Sync when page becomes visible
         document.addEventListener('visibilitychange', function() {
