@@ -4,14 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EDC Orlando 2024 Countdown</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <style>
-        /* Your existing styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #00ff00;
+        }
+        .countdown {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            background-color: #333;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress {
+            background-color: #00ff00;
+            height: 100%;
+            width: 0;
+            transition: width 0.5s ease-in-out;
+        }
+        .tally-visualization {
+            font-size: 24px;
+            line-height: 1.5;
+            margin-top: 20px;
+        }
+        .weather-forecast, .artist-list {
+            background-color: #111;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .artist-input {
+            margin-top: 10px;
+        }
+        input[type="text"], button {
+            padding: 5px 10px;
+        }
+        button {
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #00cc00;
+        }
+        .day-section {
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Existing HTML structure -->
+        <h1>EDC Orlando 2024 Countdown</h1>
+        <div id="countdown" class="countdown"></div>
+        <div class="visualization-toggle">
+            <label class="switch">
+                <input type="checkbox" id="visualizationToggle">
+                <span class="slider round"></span>
+            </label>
+            <span id="toggleLabel">Progress Bar</span>
+        </div>
+        <h3 id="progressHeading">Progress</h3>
+        <div id="progressBar" class="progress-bar">
+            <div id="progress" class="progress"></div>
+        </div>
+        <div id="tallyVisualization" class="tally-visualization" style="display: none;"></div>
         <div id="dayBreakdown"></div>
     </div>
 
@@ -81,10 +155,6 @@
             <p>Weeks until EDC Orlando: ${weeks}</p>
             <p>Weekend days until EDC Orlando: ${weekendDays}</p>
         `;
-
-        document.getElementById('days').textContent = daysLeft;
-        document.getElementById('weeks').textContent = weeks;
-        document.getElementById('weekendDays').textContent = weekendDays;
 
         updateVisualization(daysLeft, totalDays, daysPassedSinceStart);
     }
@@ -216,6 +286,17 @@
         initializeDayBreakdown();
         fetchArtists(); // Fetch artists when the page loads
     });
+
+    // Service Worker Registration (commented out for GitHub Pages preview)
+    /*
+    if ('serviceWorker' in navigator && !window.location.href.includes('github.io')) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service worker registered.', reg))
+                .catch(err => console.log('Service worker registration failed.', err));
+        });
+    }
+    */
     </script>
 </body>
 </html>
