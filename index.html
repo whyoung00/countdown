@@ -100,6 +100,8 @@
         '2024-11-10': []
     };
 
+    let lastSyncTimestamp = 0;
+
     async function fetchArtists() {
         try {
             const response = await fetch(JSONBIN_URL, {
@@ -126,25 +128,25 @@
                     'Content-Type': 'application/json',
                     'X-Master-Key': JSONBIN_API_KEY
                 },
-                body: JSON.stringify(artistStorage)
+                body: JSON.stringify({
+                    artists: artistStorage,
+                    lastUpdated: Date.now()
+                })
             });
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
+            lastSyncTimestamp = Date.now();
         } catch (error) {
             console.error('Error saving artists:', error);
         }
     }
 
     function mergeArtistData(remoteData) {
-        for (const date in remoteData) {
-            if (artistStorage[date]) {
-                artistStorage[date] = [...new Set([...artistStorage[date], ...remoteData[date]])];
-            } else {
-                artistStorage[date] = remoteData[date];
-            }
+        if (remoteData.lastUpdated > lastSyncTimestamp) {
+            artistStorage = remoteData.artists;
+            lastSyncTimestamp = remoteData.lastUpdated;
         }
-        localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
     }
 
     async function syncArtists() {
@@ -307,7 +309,7 @@
 
         initializeDayBreakdown();
         syncArtists(); // Initial sync of artists
-        setInterval(syncArtists, 1000 * 30); // Sync artists every 30 seconds
+        setInterval(syncArtists, 1000 * 10); // Sync artists every 10 seconds
 
         // Sync when page becomes visible
         document.addEventListener('visibilitychange', function() {
