@@ -285,16 +285,17 @@
     const COUNTDOWN_START = moment('2023-11-08');
     const TOTAL_DAYS = EDC_START.diff(COUNTDOWN_START, 'days');
 
-    function handleError(error, context) {
+    async function handleError(error, context) {
         console.error(`Error in ${context}:`, error);
         let errorMessage = `An error occurred while ${context}. `;
         if (error.message) {
             errorMessage += error.message;
         }
-        if (error.response && error.response.status) {
-            errorMessage += ` (Status: ${error.response.status})`;
+        if (error.response) {
+            errorMessage += ` Response status: ${error.response.status}`;
+            console.error('Response:', await error.response.text());
         }
-        alert(errorMessage + " Please try again later.");
+        alert(errorMessage + " Please check the console for more details and try again later.");
     }
 
     async function syncArtists() {
@@ -305,9 +306,10 @@
                 }
             });
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
             }
             const data = await response.json();
+            console.log('JSONBIN response:', data);
             const remoteArtistStorage = data.record;
             
             let hasChanges = false;
@@ -337,7 +339,7 @@
                 updateArtistLists();
             }
         } catch (error) {
-            handleError(error, 'syncArtists');
+            await handleError(error, 'syncArtists');
         }
     }
 
@@ -352,11 +354,11 @@
                 body: JSON.stringify(artistStorage)
             });
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
             }
             localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
         } catch (error) {
-            handleError(error, 'saveArtists');
+            await handleError(error, 'saveArtists');
             localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
         }
     }
@@ -416,8 +418,7 @@
             tallyVisualization.innerHTML = tallyHTML;
         }
     }
-
-    async function fetchWeatherForecast() {
+        async function fetchWeatherForecast() {
         const lat = 28.5383; // Orlando latitude
         const lon = -81.3792; // Orlando longitude
         const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=current,minutely,hourly,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
@@ -425,11 +426,13 @@
         try {
             const response = await fetch(url);
             if (!response.ok) {
-                throw new Error('Weather API request failed');
+                throw new Error(`Weather API request failed: ${response.status} ${response.statusText}`);
             }
-            return await response.json();
+            const data = await response.json();
+            console.log('Weather API response:', data);
+            return data;
         } catch (error) {
-            handleError(error, 'fetchWeatherForecast');
+            await handleError(error, 'fetchWeatherForecast');
             return null;
         }
     }
@@ -533,6 +536,20 @@
         clearInterval(syncInterval);
     }
 
+    async function testAPIs() {
+        try {
+            console.log('Testing JSONBIN API...');
+            await syncArtists();
+            console.log('JSONBIN API test complete');
+
+            console.log('Testing Weather API...');
+            await fetchWeatherForecast();
+            console.log('Weather API test complete');
+        } catch (error) {
+            console.error('API test failed:', error);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const toggleElement = document.getElementById('visualizationToggle');
         if (toggleElement) {
@@ -561,6 +578,9 @@
                 startSync();
             }
         });
+
+        // Add this line to test the APIs immediately
+        testAPIs();
     });
 
     if ('serviceWorker' in navigator) {
