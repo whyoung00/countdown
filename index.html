@@ -100,8 +100,6 @@
         '2024-11-10': []
     };
 
-    let lastSyncTimestamp = 0;
-
     async function fetchArtists() {
         try {
             const response = await fetch(JSONBIN_URL, {
@@ -113,10 +111,16 @@
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            mergeArtistData(data.record);
+            artistStorage = data.record;
+            localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
             updateArtistLists();
         } catch (error) {
             console.error('Error fetching artists:', error);
+            const localData = localStorage.getItem('artistStorage');
+            if (localData) {
+                artistStorage = JSON.parse(localData);
+                updateArtistLists();
+            }
         }
     }
 
@@ -128,30 +132,44 @@
                     'Content-Type': 'application/json',
                     'X-Master-Key': JSONBIN_API_KEY
                 },
-                body: JSON.stringify({
-                    artists: artistStorage,
-                    lastUpdated: Date.now()
-                })
+                body: JSON.stringify(artistStorage)
             });
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            lastSyncTimestamp = Date.now();
+            localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
         } catch (error) {
             console.error('Error saving artists:', error);
-        }
-    }
-
-    function mergeArtistData(remoteData) {
-        if (remoteData.lastUpdated > lastSyncTimestamp) {
-            artistStorage = remoteData.artists;
-            lastSyncTimestamp = remoteData.lastUpdated;
+            localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
         }
     }
 
     async function syncArtists() {
-        await fetchArtists();
-        await saveArtists();
+        try {
+            const response = await fetch(JSONBIN_URL, {
+                headers: {
+                    'X-Master-Key': JSONBIN_API_KEY
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            const remoteArtistStorage = data.record;
+            
+            // Merge remote data with local data
+            for (const date in remoteArtistStorage) {
+                artistStorage[date] = [...new Set([...artistStorage[date], ...remoteArtistStorage[date]])];
+            }
+            
+            localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
+            updateArtistLists();
+            
+            // Save merged data back to JSONbin
+            await saveArtists();
+        } catch (error) {
+            console.error('Error syncing artists:', error);
+        }
     }
 
     function updateCountdown() {
@@ -308,15 +326,8 @@
         setInterval(updateCountdown, 1000 * 60 * 60); // Update countdown every hour
 
         initializeDayBreakdown();
-        syncArtists(); // Initial sync of artists
-        setInterval(syncArtists, 1000 * 10); // Sync artists every 10 seconds
-
-        // Sync when page becomes visible
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                syncArtists();
-            }
-        });
+        fetchArtists(); // Initial fetch of artists
+        setInterval(syncArtists, 1000 * 60 * 5); // Sync artists every 5 minutes
     });
 
     // Service Worker Registration (commented out for GitHub Pages preview)
