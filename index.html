@@ -270,10 +270,10 @@
         <div id="dayBreakdown"></div>
     </div>
     <script>
-    const JSONBIN_API_KEY = '$2a$10$E8U8WkU0x8Yn5HFg0G7aa.FZRnhy0u./upu//fR1KvvLdsMSihau6';
+    const JSONBIN_API_KEY = '$2a$10$E8U8WkU0x8Yn5HFgD67aa.FZRnby0u./upu//fRlKvvLdsMSiNau6'; 
     const JSONBIN_BIN_ID = '66f2b02ae41b4d34e436315d';
     const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
-    const WEATHER_API_KEY = '47875c2b6fbbf1074f726586868c1993';
+    const WEATHER_API_KEY = '47875c2b6fbbf1074f726586868c1993'; 
 
     let artistStorage = {
         '2024-11-08': [],
@@ -300,12 +300,18 @@
 
     async function syncArtists() {
         try {
+            console.log('Syncing artists...');
+            console.log('JSONBIN URL:', JSONBIN_URL);
+            console.log('JSONBIN API Key (first 10 chars):', JSONBIN_API_KEY.substring(0, 10) + '...');
+            
             const response = await fetch(JSONBIN_URL, {
                 headers: {
                     'X-Master-Key': JSONBIN_API_KEY
                 }
             });
             if (!response.ok) {
+                const responseText = await response.text();
+                console.error('JSONBIN API Response:', responseText);
                 throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
             }
             const data = await response.json();
@@ -424,8 +430,14 @@
         const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=current,minutely,hourly,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
         
         try {
+            console.log('Fetching weather forecast...');
+            console.log('Weather API URL:', url);
+            console.log('Weather API Key (first 10 chars):', WEATHER_API_KEY.substring(0, 10) + '...');
+            
             const response = await fetch(url);
             if (!response.ok) {
+                const responseText = await response.text();
+                console.error('Weather API Response:', responseText);
                 throw new Error(`Weather API request failed: ${response.status} ${response.statusText}`);
             }
             const data = await response.json();
@@ -536,18 +548,16 @@
         clearInterval(syncInterval);
     }
 
-    async function testAPIs() {
-        try {
-            console.log('Testing JSONBIN API...');
-            await syncArtists();
-            console.log('JSONBIN API test complete');
+    async function testAPIKeys() {
+        console.log('Testing JSONBIN API...');
+        const jsonbinResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+            headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        console.log('JSONBIN API status:', jsonbinResponse.status);
 
-            console.log('Testing Weather API...');
-            await fetchWeatherForecast();
-            console.log('Weather API test complete');
-        } catch (error) {
-            console.error('API test failed:', error);
-        }
+        console.log('Testing Weather API...');
+        const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=28.5383&lon=-81.3792&exclude=current,minutely,hourly,alerts&units=imperial&appid=${WEATHER_API_KEY}`);
+        console.log('Weather API status:', weatherResponse.status);
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -579,8 +589,8 @@
             }
         });
 
-        // Add this line to test the APIs immediately
-        testAPIs();
+        // Test API keys
+        testAPIKeys();
     });
 
     if ('serviceWorker' in navigator) {
