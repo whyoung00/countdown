@@ -271,335 +271,335 @@
     </div>
     <script>
     const JSONBIN_API_KEY = '$2a$10$E8U8WkU0x8Yn5HFgD67aa.FZRnby0u./upu//fRlKvvLdsMSiNau6'; 
-    const JSONBIN_BIN_ID = '66f2b02ae41b4d34e436315d';
-    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
-    const WEATHER_API_KEY = '47875c2b6fbbf1074f726586868c1993'; 
+const JSONBIN_BIN_ID = '66f2b02ae41b4d34e436315d';
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+const WEATHER_API_KEY = '47875c2b6fbbf1074f726586868c1993'; 
 
-    let artistStorage = {
-        '2024-11-08': [],
-        '2024-11-09': [],
-        '2024-11-10': []
-    };
+let artistStorage = {
+    '2024-11-08': [],
+    '2024-11-09': [],
+    '2024-11-10': []
+};
 
-    const EDC_START = moment('2024-11-08');
-    const COUNTDOWN_START = moment('2023-11-08');
-    const TOTAL_DAYS = EDC_START.diff(COUNTDOWN_START, 'days');
+const EDC_START = moment('2024-11-08');
+const COUNTDOWN_START = moment('2023-11-08');
+const TOTAL_DAYS = EDC_START.diff(COUNTDOWN_START, 'days');
 
-    async function handleError(error, context) {
-        console.error(`Error in ${context}:`, error);
-        let errorMessage = `An error occurred while ${context}. `;
-        if (error.message) {
-            errorMessage += error.message;
-        }
-        if (error.response) {
-            errorMessage += ` Response status: ${error.response.status}`;
-            console.error('Response:', await error.response.text());
-        }
-        alert(errorMessage + " Please check the console for more details and try again later.");
+async function handleError(error, context) {
+    console.error(`Error in ${context}:`, error);
+    let errorMessage = `An error occurred while ${context}. `;
+    if (error.message) {
+        errorMessage += error.message;
     }
-
-    async function syncArtists() {
-        try {
-            console.log('Syncing artists...');
-            console.log('JSONBIN URL:', JSONBIN_URL);
-            console.log('JSONBIN API Key (first 10 chars):', JSONBIN_API_KEY.substring(0, 10) + '...');
-            
-            const response = await fetch(JSONBIN_URL, {
-                headers: {
-                    'X-Master-Key': JSONBIN_API_KEY
-                }
-            });
-            if (!response.ok) {
-                const responseText = await response.text();
-                console.error('JSONBIN API Response:', responseText);
-                throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
-            }
-            const data = await response.json();
-            console.log('JSONBIN response:', data);
-            const remoteArtistStorage = data.record;
-            
-            let hasChanges = false;
-
-            for (const date in remoteArtistStorage) {
-                if (!artistStorage[date]) {
-                    artistStorage[date] = [];
-                }
-                
-                const localSet = new Set(artistStorage[date]);
-                const remoteSet = new Set(remoteArtistStorage[date]);
-                
-                const combinedSet = new Set([...localSet, ...remoteSet]);
-                
-                if (combinedSet.size !== localSet.size || combinedSet.size !== remoteSet.size) {
-                    artistStorage[date] = Array.from(combinedSet);
-                    hasChanges = true;
-                }
-            }
-
-            if (hasChanges) {
-                await saveArtists();
-                updateArtistLists();
-            } else {
-                localStorage.setItem('artistStorage', JSON.stringify(remoteArtistStorage));
-                artistStorage = remoteArtistStorage;
-                updateArtistLists();
-            }
-        } catch (error) {
-            await handleError(error, 'syncArtists');
-        }
+    if (error.response) {
+        errorMessage += ` Response status: ${error.response.status}`;
+        console.error('Response:', await error.response.text());
     }
+    alert(errorMessage + " Please check the console for more details and try again later.");
+}
 
-    async function saveArtists() {
-        try {
-            const response = await fetch(JSONBIN_URL, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_API_KEY
-                },
-                body: JSON.stringify(artistStorage)
-            });
-            if (!response.ok) {
-                throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
-            }
-            localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
-        } catch (error) {
-            await handleError(error, 'saveArtists');
-            localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
-        }
-    }
-
-    function updateCountdown() {
-        const now = moment();
-        const daysPassedSinceStart = now.diff(COUNTDOWN_START, 'days');
-        const daysLeft = EDC_START.diff(now, 'days');
-        const weeks = Math.floor(daysLeft / 7);
+async function syncArtists() {
+    try {
+        console.log('Syncing artists...');
+        console.log('JSONBIN URL:', JSONBIN_URL);
+        console.log('JSONBIN API Key (first 10 chars):', JSONBIN_API_KEY.substring(0, 10) + '...');
         
-        let weekendDays = 0;
-        let currentDate = now.clone();
-        while (currentDate.isBefore(EDC_START)) {
-            if (currentDate.day() === 0 || currentDate.day() === 6) {
-                weekendDays++;
+        const response = await fetch(JSONBIN_URL, {
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY
             }
-            currentDate.add(1, 'day');
-        }
-
-        const countdownElement = document.getElementById('countdown');
-        countdownElement.innerHTML = `
-            <p>Days until EDC Orlando: <span>${daysLeft}</span></p>
-            <p>Weeks until EDC Orlando: <span>${weeks}</span></p>
-            <p>Weekend days until EDC Orlando: <span>${weekendDays}</span></p>
-        `;
-
-        updateVisualization(daysLeft, TOTAL_DAYS, daysPassedSinceStart);
-    }
-
-    function updateVisualization(daysLeft, totalDays, daysPassedSinceStart) {
-        const isProgressBar = document.getElementById('visualizationToggle').checked;
-        const progressBar = document.getElementById('progressBar');
-        const tallyVisualization = document.getElementById('tallyVisualization');
-        document.getElementById('progressHeading').style.display = isProgressBar ? 'block' : 'none';
-
-        if (isProgressBar) {
-            progressBar.style.display = 'block';
-            tallyVisualization.style.display = 'none';
-            const progressPercentage = (daysPassedSinceStart / totalDays) * 100;
-            document.getElementById('progress').style.width = `${progressPercentage}%`;
-        } else {
-            progressBar.style.display = 'none';
-            tallyVisualization.style.display = 'block';
-            const tallyGroups = Math.floor(daysLeft / 7);
-            const remainingTallies = daysLeft % 7;
-            let tallyHTML = '';
-            for (let i = 0; i < tallyGroups; i++) {
-                tallyHTML += '|||||<span style="color: var(--primary-color);">||</span> ';
-            }
-            for (let i = 0; i < remainingTallies; i++) {
-                if (i === 5 || i === 6) {
-                    tallyHTML += '<span style="color: var(--primary-color);">|</span>';
-                } else {
-                    tallyHTML += '|';
-                }
-            }
-            tallyVisualization.innerHTML = tallyHTML;
-        }
-    }
-        async function fetchWeatherForecast() {
-        const lat = 28.5383; // Orlando latitude
-        const lon = -81.3792; // Orlando longitude
-        const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=current,minutely,hourly,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
-        
-        try {
-            console.log('Fetching weather forecast...');
-            console.log('Weather API URL:', url);
-            console.log('Weather API Key (first 10 chars):', WEATHER_API_KEY.substring(0, 10) + '...');
-            
-            const response = await fetch(url);
-            if (!response.ok) {
-                const responseText = await response.text();
-                console.error('Weather API Response:', responseText);
-                throw new Error(`Weather API request failed: ${response.status} ${response.statusText}`);
-            }
-            const data = await response.json();
-            console.log('Weather API response:', data);
-            return data;
-        } catch (error) {
-            await handleError(error, 'fetchWeatherForecast');
-            return null;
-        }
-    }
-
-    function initializeDayBreakdown() {
-        const dayBreakdown = document.getElementById('dayBreakdown');
-        const edcDates = ['2024-11-08', '2024-11-09', '2024-11-10'];
-        
-        fetchWeatherForecast().then(weatherData => {
-            edcDates.forEach((date, index) => {
-                const daySection = document.createElement('div');
-                daySection.className = 'day-section';
-                const dayForecast = weatherData ? weatherData.daily[index] : null;
-                
-                let weatherHTML = '';
-                if (dayForecast) {
-                    weatherHTML = `
-                        <div class="weather-forecast">
-                            <h3>Weather Forecast</h3>
-                            <p>Temperature: ${Math.round(dayForecast.temp.day)}°F (Low: ${Math.round(dayForecast.temp.min)}°F, High: ${Math.round(dayForecast.temp.max)}°F)</p>
-                            <p>Weather: ${dayForecast.weather[0].description}</p>
-                            <p>Humidity: ${dayForecast.humidity}%</p>
-                            <p>Wind Speed: ${Math.round(dayForecast.wind_speed)} mph</p>
-                        </div>
-                    `;
-                } else {
-                    weatherHTML = `
-                        <div class="weather-forecast">
-                            <h3>Weather Forecast</h3>
-                            <p>Weather data unavailable</p>
-                        </div>
-                    `;
-                }
-                
-                daySection.innerHTML = `
-                    <h2>${moment(date).format('dddd, MMMM D')}</h2>
-                    ${weatherHTML}
-                    <div class="artist-list">
-                        <h3>Your Artists</h3>
-                        <ul id="artistList-${date}"></ul>
-                        <div class="artist-input">
-                            <input type="text" id="artistInput-${date}" placeholder="Enter artist name">
-                            <button onclick="addArtist('${date}')">Add</button>
-                        </div>
-                    </div>
-                `;
-                dayBreakdown.appendChild(daySection);
-            });
-
-            updateArtistLists();
         });
-    }
+        if (!response.ok) {
+            const responseText = await response.text();
+            console.error('JSONBIN API Response:', responseText);
+            throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log('JSONBIN response:', data);
+        const remoteArtistStorage = data.record || {};
+        
+        let hasChanges = false;
 
-    function updateArtistLists() {
-        const edcDates = ['2024-11-08', '2024-11-09', '2024-11-10'];
-        edcDates.forEach(date => {
-            const list = document.getElementById(`artistList-${date}`);
-            list.innerHTML = '';
-            artistStorage[date].forEach(artist => addArtistToList(date, artist));
-        });
-    }
+        for (const date in artistStorage) {
+            if (!remoteArtistStorage[date]) {
+                remoteArtistStorage[date] = [];
+            }
+            
+            const localSet = new Set(artistStorage[date]);
+            const remoteSet = new Set(remoteArtistStorage[date]);
+            
+            const combinedSet = new Set([...localSet, ...remoteSet]);
+            
+            if (combinedSet.size !== localSet.size || combinedSet.size !== remoteSet.size) {
+                artistStorage[date] = Array.from(combinedSet);
+                hasChanges = true;
+            }
+        }
 
-    async function addArtist(date) {
-        const input = document.getElementById(`artistInput-${date}`);
-        const artistName = input.value.trim();
-        if (artistName) {
-            artistStorage[date].push(artistName);
+        if (hasChanges) {
             await saveArtists();
             updateArtistLists();
-            input.value = '';
-            syncArtists();
+        } else {
+            localStorage.setItem('artistStorage', JSON.stringify(remoteArtistStorage));
+            artistStorage = remoteArtistStorage;
+            updateArtistLists();
         }
+    } catch (error) {
+        await handleError(error, 'syncArtists');
+    }
+}
+
+async function saveArtists() {
+    try {
+        const response = await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_API_KEY
+            },
+            body: JSON.stringify(artistStorage)
+        });
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        }
+        localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
+    } catch (error) {
+        await handleError(error, 'saveArtists');
+        localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
+    }
+}
+
+async function fetchWeatherForecast() {
+    const lat = 28.5383; // Orlando latitude
+    const lon = -81.3792; // Orlando longitude
+    const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=current,minutely,hourly,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
+    
+    try {
+        console.log('Fetching weather forecast...');
+        console.log('Weather API URL:', url);
+        console.log('Weather API Key (first 10 chars):', WEATHER_API_KEY.substring(0, 10) + '...');
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            const responseText = await response.text();
+            console.error('Weather API Response:', responseText);
+            throw new Error(`Weather API request failed: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log('Weather API response:', data);
+        return data;
+    } catch (error) {
+        await handleError(error, 'fetchWeatherForecast');
+        return null;
+    }
+}
+
+function updateCountdown() {
+    const now = moment();
+    const daysPassedSinceStart = now.diff(COUNTDOWN_START, 'days');
+    const daysLeft = EDC_START.diff(now, 'days');
+    const weeks = Math.floor(daysLeft / 7);
+    
+    let weekendDays = 0;
+    let currentDate = now.clone();
+    while (currentDate.isBefore(EDC_START)) {
+        if (currentDate.day() === 0 || currentDate.day() === 6) {
+            weekendDays++;
+        }
+        currentDate.add(1, 'day');
     }
 
-    function addArtistToList(date, artistName) {
+    const countdownElement = document.getElementById('countdown');
+    countdownElement.innerHTML = `
+        <p>Days until EDC Orlando: <span>${daysLeft}</span></p>
+        <p>Weeks until EDC Orlando: <span>${weeks}</span></p>
+        <p>Weekend days until EDC Orlando: <span>${weekendDays}</span></p>
+    `;
+
+    updateVisualization(daysLeft, TOTAL_DAYS, daysPassedSinceStart);
+}
+
+function updateVisualization(daysLeft, totalDays, daysPassedSinceStart) {
+    const isProgressBar = document.getElementById('visualizationToggle').checked;
+    const progressBar = document.getElementById('progressBar');
+    const tallyVisualization = document.getElementById('tallyVisualization');
+    document.getElementById('progressHeading').style.display = isProgressBar ? 'block' : 'none';
+
+    if (isProgressBar) {
+        progressBar.style.display = 'block';
+        tallyVisualization.style.display = 'none';
+        const progressPercentage = (daysPassedSinceStart / totalDays) * 100;
+        document.getElementById('progress').style.width = `${progressPercentage}%`;
+    } else {
+        progressBar.style.display = 'none';
+        tallyVisualization.style.display = 'block';
+        const tallyGroups = Math.floor(daysLeft / 7);
+        const remainingTallies = daysLeft % 7;
+        let tallyHTML = '';
+        for (let i = 0; i < tallyGroups; i++) {
+            tallyHTML += '|||||<span style="color: var(--primary-color);">||</span> ';
+        }
+        for (let i = 0; i < remainingTallies; i++) {
+            if (i === 5 || i === 6) {
+                tallyHTML += '<span style="color: var(--primary-color);">|</span>';
+            } else {
+                tallyHTML += '|';
+            }
+        }
+        tallyVisualization.innerHTML = tallyHTML;
+    }
+}
+        function initializeDayBreakdown() {
+    const dayBreakdown = document.getElementById('dayBreakdown');
+    const edcDates = ['2024-11-08', '2024-11-09', '2024-11-10'];
+    
+    fetchWeatherForecast().then(weatherData => {
+        edcDates.forEach((date, index) => {
+            const daySection = document.createElement('div');
+            daySection.className = 'day-section';
+            const dayForecast = weatherData ? weatherData.daily[index] : null;
+            
+            let weatherHTML = '';
+            if (dayForecast) {
+                weatherHTML = `
+                    <div class="weather-forecast">
+                        <h3>Weather Forecast</h3>
+                        <p>Temperature: ${Math.round(dayForecast.temp.day)}°F (Low: ${Math.round(dayForecast.temp.min)}°F, High: ${Math.round(dayForecast.temp.max)}°F)</p>
+                        <p>Weather: ${dayForecast.weather[0].description}</p>
+                        <p>Humidity: ${dayForecast.humidity}%</p>
+                        <p>Wind Speed: ${Math.round(dayForecast.wind_speed)} mph</p>
+                    </div>
+                `;
+            } else {
+                weatherHTML = `
+                    <div class="weather-forecast">
+                        <h3>Weather Forecast</h3>
+                        <p>Weather data unavailable</p>
+                    </div>
+                `;
+            }
+            
+            daySection.innerHTML = `
+                <h2>${moment(date).format('dddd, MMMM D')}</h2>
+                ${weatherHTML}
+                <div class="artist-list">
+                    <h3>Your Artists</h3>
+                    <ul id="artistList-${date}"></ul>
+                    <div class="artist-input">
+                        <input type="text" id="artistInput-${date}" placeholder="Enter artist name">
+                        <button onclick="addArtist('${date}')">Add</button>
+                    </div>
+                </div>
+            `;
+            dayBreakdown.appendChild(daySection);
+        });
+
+        updateArtistLists();
+    });
+}
+
+function updateArtistLists() {
+    const edcDates = ['2024-11-08', '2024-11-09', '2024-11-10'];
+    edcDates.forEach(date => {
         const list = document.getElementById(`artistList-${date}`);
-        const li = document.createElement('li');
-        li.textContent = artistName;
-        const removeButton = document.createElement('button');
-        removeButton.textContent = 'Remove';
-        removeButton.onclick = () => removeArtist(date, artistName);
-        li.appendChild(removeButton);
-        list.appendChild(li);
-    }
+        list.innerHTML = '';
+        artistStorage[date].forEach(artist => addArtistToList(date, artist));
+    });
+}
 
-    async function removeArtist(date, artistName) {
-        artistStorage[date] = artistStorage[date].filter(artist => artist !== artistName);
+async function addArtist(date) {
+    const input = document.getElementById(`artistInput-${date}`);
+    const artistName = input.value.trim();
+    if (artistName) {
+        artistStorage[date].push(artistName);
         await saveArtists();
         updateArtistLists();
+        input.value = '';
         syncArtists();
     }
+}
 
-    let syncInterval;
+function addArtistToList(date, artistName) {
+    const list = document.getElementById(`artistList-${date}`);
+    const li = document.createElement('li');
+    li.textContent = artistName;
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+    removeButton.onclick = () => removeArtist(date, artistName);
+    li.appendChild(removeButton);
+    list.appendChild(li);
+}
 
-    function startSync() {
-        syncArtists();
-        syncInterval = setInterval(syncArtists, 10000);
+async function removeArtist(date, artistName) {
+    artistStorage[date] = artistStorage[date].filter(artist => artist !== artistName);
+    await saveArtists();
+    updateArtistLists();
+    syncArtists();
+}
+
+let syncInterval;
+
+function startSync() {
+    syncArtists();
+    syncInterval = setInterval(syncArtists, 10000);
+}
+
+function stopSync() {
+    clearInterval(syncInterval);
+}
+
+async function testAPIKeys() {
+    console.log('Testing JSONBIN API...');
+    const jsonbinResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    console.log('JSONBIN API status:', jsonbinResponse.status);
+
+    console.log('Testing Weather API...');
+    const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=28.5383&lon=-81.3792&exclude=current,minutely,hourly,alerts&units=imperial&appid=${WEATHER_API_KEY}`);
+    console.log('Weather API status:', weatherResponse.status);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleElement = document.getElementById('visualizationToggle');
+    if (toggleElement) {
+        toggleElement.addEventListener('change', function() {
+            const toggleLabel = document.getElementById('toggleLabel');
+            toggleLabel.textContent = this.checked ? 'Progress Bar' : 'Tally Visualization';
+            updateCountdown();
+        });
     }
 
-    function stopSync() {
-        clearInterval(syncInterval);
-    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000 * 60 * 60);
 
-    async function testAPIKeys() {
-        console.log('Testing JSONBIN API...');
-        const jsonbinResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-            headers: { 'X-Master-Key': JSONBIN_API_KEY }
-        });
-        console.log('JSONBIN API status:', jsonbinResponse.status);
-
-        console.log('Testing Weather API...');
-        const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=28.5383&lon=-81.3792&exclude=current,minutely,hourly,alerts&units=imperial&appid=${WEATHER_API_KEY}`);
-        console.log('Weather API status:', weatherResponse.status);
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleElement = document.getElementById('visualizationToggle');
-        if (toggleElement) {
-            toggleElement.addEventListener('change', function() {
-                const toggleLabel = document.getElementById('toggleLabel');
-                toggleLabel.textContent = this.checked ? 'Progress Bar' : 'Tally Visualization';
-                updateCountdown();
-            });
-        }
-
-        updateCountdown();
-        setInterval(updateCountdown, 1000 * 60 * 60);
-
-        initializeDayBreakdown();
-        syncArtists().then(() => {
-            startSync();
-        });
-
-        window.addEventListener('online', startSync);
-        window.addEventListener('offline', stopSync);
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                stopSync();
-            } else {
-                startSync();
-            }
-        });
-
-        // Test API keys
-        testAPIKeys();
+    initializeDayBreakdown();
+    syncArtists().then(() => {
+        startSync();
     });
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('Service worker registered.', reg))
-                .catch(err => console.log('Service worker registration failed.', err));
-        });
-    }
+    window.addEventListener('online', startSync);
+    window.addEventListener('offline', stopSync);
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopSync();
+        } else {
+            startSync();
+        }
+    });
+
+    // Test API keys
+    testAPIKeys();
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service worker registered.', reg))
+            .catch(err => console.log('Service worker registration failed.', err));
+    });
+}
     </script>
 </body>
 </html>
