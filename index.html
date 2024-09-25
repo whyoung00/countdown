@@ -10,18 +10,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #1db954;
-            --primary-dark: #15883e;
             --background-color: #121212;
             --surface-color: #1e1e1e;
             --on-surface-color: #e0e0e0;
-            --accent-color: #ff6d00;
         }
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: var(--background-color);
             color: var(--on-surface-color);
             margin: 0;
@@ -33,10 +31,10 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 30px;
+            padding: 20px;
             background-color: var(--surface-color);
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(29, 185, 84, 0.1);
             transition: all 0.3s ease;
         }
         h1, h2, h3 {
@@ -44,73 +42,51 @@
             font-weight: 700;
         }
         h1 {
-            font-size: 3em;
+            font-size: 2.5em;
             text-align: center;
             margin-bottom: 30px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .countdown {
-            font-size: 1.4em;
-            margin-bottom: 40px;
+            font-size: 1.2em;
+            margin-bottom: 30px;
             background-color: rgba(37, 37, 37, 0.8);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(29, 185, 84, 0.1);
             backdrop-filter: blur(10px);
         }
         .countdown p {
-            margin: 15px 0;
+            margin: 10px 0;
             transition: all 0.3s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .countdown span {
-            font-weight: 700;
-            color: var(--primary-color);
-            font-size: 1.2em;
         }
         .progress-bar {
             background-color: #333;
-            height: 30px;
-            border-radius: 15px;
+            height: 20px;
+            border-radius: 10px;
             overflow: hidden;
-            margin-top: 30px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
         }
         .progress {
             background-color: var(--primary-color);
             height: 100%;
             width: 0;
             transition: width 1s ease-in-out;
-            box-shadow: 0 0 20px rgba(29, 185, 84, 0.7);
-            background-image: linear-gradient(45deg, var(--primary-color) 25%, var(--primary-dark) 25%, var(--primary-dark) 50%, var(--primary-color) 50%, var(--primary-color) 75%, var(--primary-dark) 75%, var(--primary-dark) 100%);
-            background-size: 40px 40px;
-            animation: stripes 1s linear infinite;
-        }
-        @keyframes stripes {
-            0% {
-                background-position: 0 0;
-            }
-            100% {
-                background-position: 40px 0;
-            }
+            box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
         }
         .tally-visualization {
-            font-size: 28px;
+            font-size: 24px;
             line-height: 1.5;
-            margin-top: 30px;
+            margin-top: 20px;
             text-align: center;
             transition: all 0.5s ease;
-            text-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
         }
         .weather-forecast, .artist-list {
             background-color: rgba(37, 37, 37, 0.8);
-            padding: 25px;
-            margin-top: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.2);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(29, 185, 84, 0.1);
             backdrop-filter: blur(10px);
         }
         .artist-input {
@@ -118,34 +94,30 @@
             display: flex;
         }
         input[type="text"], button {
-            padding: 12px;
+            padding: 10px;
             font-size: 1em;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
         }
         input[type="text"] {
             flex-grow: 1;
             margin-right: 10px;
             background-color: #333;
             color: var(--on-surface-color);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         button {
             background-color: var(--primary-color);
             color: #000;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
         button:hover {
-            background-color: var(--accent-color);
+            background-color: #1ed760;
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(255, 109, 0, 0.3);
+            box-shadow: 0 2px 4px rgba(29, 185, 84, 0.2);
         }
         .day-section {
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             transition: all 0.3s ease;
             opacity: 0.9;
         }
@@ -158,7 +130,7 @@
             display: inline-block;
             width: 60px;
             height: 34px;
-            margin-right: 15px;
+            margin-right: 10px;
         }
         .switch input {
             opacity: 0;
@@ -197,46 +169,37 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         #toggleLabel {
-            font-size: 1.1em;
-            font-weight: 600;
+            font-size: 1em;
         }
         ul {
             list-style-type: none;
             padding: 0;
         }
         li {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: rgba(255, 255, 255, 0.05);
-            padding: 10px 15px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        li:hover {
-            background-color: rgba(255, 255, 255, 0.1);
         }
         li button {
-            font-size: 0.9em;
-            padding: 8px 12px;
+            font-size: 0.8em;
+            padding: 5px 10px;
         }
         @media (max-width: 600px) {
             body {
                 padding: 10px;
             }
             .container {
-                padding: 20px;
+                padding: 10px;
             }
             h1 {
-                font-size: 2.2em;
+                font-size: 2em;
             }
             .countdown {
-                font-size: 1.1em;
-                padding: 20px;
+                font-size: 1em;
             }
             .artist-input {
                 flex-direction: column;
@@ -246,7 +209,7 @@
                 margin-bottom: 10px;
             }
             .switch {
-                transform: scale(0.9);
+                transform: scale(0.8);
             }
         }
     </style>
@@ -269,11 +232,11 @@
         <div id="tallyVisualization" class="tally-visualization" style="display: none;"></div>
         <div id="dayBreakdown"></div>
     </div>
+
     <script>
-    const JSONBIN_API_KEY = '$2a$10$E8U8WkU0x8Yn5HFg0G7aa.FZRnhy0u./upu//fR1KvvLdsMSihau6';
+        const JSONBIN_API_KEY = '$2a$10$E8U8WkU0x8Yn5HFg0G7aa.FZRnhy0u./upu//fR1KvvLdsMSihau6';
     const JSONBIN_BIN_ID = '66f2b02ae41b4d34e436315d';
     const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
-    const WEATHER_API_KEY = '47875c2b6fbbf1074f726586868c1993';
 
     let artistStorage = {
         '2024-11-08': [],
@@ -281,23 +244,31 @@
         '2024-11-10': []
     };
 
-    const EDC_START = moment('2024-11-08');
-    const COUNTDOWN_START = moment('2023-11-08');
-    const TOTAL_DAYS = EDC_START.diff(COUNTDOWN_START, 'days');
-
     function handleError(error, context) {
         console.error(`Error in ${context}:`, error);
-        let errorMessage = `An error occurred while ${context}. `;
-        if (error.message) {
-            errorMessage += error.message;
-        }
-        if (error.response && error.response.status) {
-            errorMessage += ` (Status: ${error.response.status})`;
-        }
-        alert(errorMessage + " Please try again later.");
+        // Implement user-friendly error messages here
     }
 
-    async function syncArtists() {
+    async function fetchArtistsWithRetry(retries = 3) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                await fetchArtists();
+                return;
+            } catch (error) {
+                if (i === retries - 1) {
+                    handleError(error, 'fetchArtists');
+                    // Use local storage as fallback
+                    const localData = localStorage.getItem('artistStorage');
+                    if (localData) {
+                        artistStorage = JSON.parse(localData);
+                        updateArtistLists();
+                    }
+                }
+            }
+        }
+    }
+
+    async function fetchArtists() {
         try {
             const response = await fetch(JSONBIN_URL, {
                 headers: {
@@ -308,36 +279,11 @@
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            const remoteArtistStorage = data.record;
-            
-            let hasChanges = false;
-
-            for (const date in remoteArtistStorage) {
-                if (!artistStorage[date]) {
-                    artistStorage[date] = [];
-                }
-                
-                const localSet = new Set(artistStorage[date]);
-                const remoteSet = new Set(remoteArtistStorage[date]);
-                
-                const combinedSet = new Set([...localSet, ...remoteSet]);
-                
-                if (combinedSet.size !== localSet.size || combinedSet.size !== remoteSet.size) {
-                    artistStorage[date] = Array.from(combinedSet);
-                    hasChanges = true;
-                }
-            }
-
-            if (hasChanges) {
-                await saveArtists();
-                updateArtistLists();
-            } else {
-                localStorage.setItem('artistStorage', JSON.stringify(remoteArtistStorage));
-                artistStorage = remoteArtistStorage;
-                updateArtistLists();
-            }
+            artistStorage = data.record;
+            localStorage.setItem('artistStorage', JSON.stringify(artistStorage));
+            updateArtistLists();
         } catch (error) {
-            handleError(error, 'syncArtists');
+            throw error;
         }
     }
 
@@ -361,15 +307,51 @@
         }
     }
 
+    async function syncArtists() {
+        try {
+            const response = await fetch(JSONBIN_URL, {
+                headers: {
+                    'X-Master-Key': JSONBIN_API_KEY
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            const remoteArtistStorage = data.record;
+            
+            // Merge remote data with local data
+            let hasChanges = false;
+            for (const date in remoteArtistStorage) {
+                const mergedArtists = [...new Set([...artistStorage[date], ...remoteArtistStorage[date]])];
+                if (JSON.stringify(mergedArtists) !== JSON.stringify(artistStorage[date])) {
+                    artistStorage[date] = mergedArtists;
+                    hasChanges = true;
+                }
+            }
+            
+            if (hasChanges) {
+                await saveArtists();
+                updateArtistLists();
+            }
+        } catch (error) {
+            handleError(error, 'syncArtists');
+        }
+    }
+
     function updateCountdown() {
         const now = moment();
-        const daysPassedSinceStart = now.diff(COUNTDOWN_START, 'days');
-        const daysLeft = EDC_START.diff(now, 'days');
+        const edcStart = moment('2024-11-08');
+        const countdownStart = moment('2023-11-08');
+        
+        const totalDays = edcStart.diff(countdownStart, 'days');
+        const daysPassedSinceStart = now.diff(countdownStart, 'days');
+        const daysLeft = edcStart.diff(now, 'days');
         const weeks = Math.floor(daysLeft / 7);
         
         let weekendDays = 0;
         let currentDate = now.clone();
-        while (currentDate.isBefore(EDC_START)) {
+        while (currentDate.isBefore(edcStart)) {
             if (currentDate.day() === 0 || currentDate.day() === 6) {
                 weekendDays++;
             }
@@ -378,12 +360,12 @@
 
         const countdownElement = document.getElementById('countdown');
         countdownElement.innerHTML = `
-            <p>Days until EDC Orlando: <span>${daysLeft}</span></p>
-            <p>Weeks until EDC Orlando: <span>${weeks}</span></p>
-            <p>Weekend days until EDC Orlando: <span>${weekendDays}</span></p>
+            <p>Days until EDC Orlando: ${daysLeft}</p>
+            <p>Weeks until EDC Orlando: ${weeks}</p>
+            <p>Weekend days until EDC Orlando: ${weekendDays}</p>
         `;
 
-        updateVisualization(daysLeft, TOTAL_DAYS, daysPassedSinceStart);
+        updateVisualization(daysLeft, totalDays, daysPassedSinceStart);
     }
 
     function updateVisualization(daysLeft, totalDays, daysPassedSinceStart) {
@@ -414,73 +396,53 @@
                 }
             }
             tallyVisualization.innerHTML = tallyHTML;
-        }
+            }
     }
 
-    async function fetchWeatherForecast() {
-        const lat = 28.5383; // Orlando latitude
-        const lon = -81.3792; // Orlando longitude
-        const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=current,minutely,hourly,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
-        
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('Weather API request failed');
-            }
-            return await response.json();
-        } catch (error) {
-            handleError(error, 'fetchWeatherForecast');
-            return null;
-        }
+    function fetchWeatherForecast() {
+        // Simulated weather data for preview
+        const simulatedWeather = {
+            daily: [
+                { temp: { day: 75, min: 65, max: 85 }, weather: [{ description: 'Partly cloudy' }], humidity: 60, wind_speed: 5 },
+                { temp: { day: 78, min: 68, max: 88 }, weather: [{ description: 'Sunny' }], humidity: 55, wind_speed: 6 },
+                { temp: { day: 76, min: 66, max: 86 }, weather: [{ description: 'Clear sky' }], humidity: 58, wind_speed: 4 }
+            ]
+        };
+        return simulatedWeather;
     }
 
     function initializeDayBreakdown() {
         const dayBreakdown = document.getElementById('dayBreakdown');
         const edcDates = ['2024-11-08', '2024-11-09', '2024-11-10'];
+        const weatherData = fetchWeatherForecast();
         
-        fetchWeatherForecast().then(weatherData => {
-            edcDates.forEach((date, index) => {
-                const daySection = document.createElement('div');
-                daySection.className = 'day-section';
-                const dayForecast = weatherData ? weatherData.daily[index] : null;
-                
-                let weatherHTML = '';
-                if (dayForecast) {
-                    weatherHTML = `
-                        <div class="weather-forecast">
-                            <h3>Weather Forecast</h3>
-                            <p>Temperature: ${Math.round(dayForecast.temp.day)}°F (Low: ${Math.round(dayForecast.temp.min)}°F, High: ${Math.round(dayForecast.temp.max)}°F)</p>
-                            <p>Weather: ${dayForecast.weather[0].description}</p>
-                            <p>Humidity: ${dayForecast.humidity}%</p>
-                            <p>Wind Speed: ${Math.round(dayForecast.wind_speed)} mph</p>
-                        </div>
-                    `;
-                } else {
-                    weatherHTML = `
-                        <div class="weather-forecast">
-                            <h3>Weather Forecast</h3>
-                            <p>Weather data unavailable</p>
-                        </div>
-                    `;
-                }
-                
-                daySection.innerHTML = `
-                    <h2>${moment(date).format('dddd, MMMM D')}</h2>
-                    ${weatherHTML}
-                    <div class="artist-list">
-                        <h3>Your Artists</h3>
-                        <ul id="artistList-${date}"></ul>
-                        <div class="artist-input">
-                            <input type="text" id="artistInput-${date}" placeholder="Enter artist name">
-                            <button onclick="addArtist('${date}')">Add</button>
-                        </div>
+        edcDates.forEach((date, index) => {
+            const daySection = document.createElement('div');
+            daySection.className = 'day-section';
+            const dayForecast = weatherData.daily[index];
+            
+            daySection.innerHTML = `
+                <h2>${moment(date).format('dddd, MMMM D')}</h2>
+                <div class="weather-forecast">
+                    <h3>Weather Forecast</h3>
+                    <p>Temperature: ${Math.round(dayForecast.temp.day)}°F (Low: ${Math.round(dayForecast.temp.min)}°F, High: ${Math.round(dayForecast.temp.max)}°F)</p>
+                    <p>Weather: ${dayForecast.weather[0].description}</p>
+                    <p>Humidity: ${dayForecast.humidity}%</p>
+                    <p>Wind Speed: ${Math.round(dayForecast.wind_speed)} mph</p>
+                </div>
+                <div class="artist-list">
+                    <h3>Your Artists</h3>
+                    <ul id="artistList-${date}"></ul>
+                    <div class="artist-input">
+                        <input type="text" id="artistInput-${date}" placeholder="Enter artist name">
+                        <button onclick="addArtist('${date}')">Add</button>
                     </div>
-                `;
-                dayBreakdown.appendChild(daySection);
-            });
-
-            updateArtistLists();
+                </div>
+            `;
+            dayBreakdown.appendChild(daySection);
         });
+
+        updateArtistLists();
     }
 
     function updateArtistLists() {
@@ -500,7 +462,7 @@
             await saveArtists();
             updateArtistLists();
             input.value = '';
-            syncArtists();
+            syncArtists(); // Sync after adding an artist
         }
     }
 
@@ -519,14 +481,14 @@
         artistStorage[date] = artistStorage[date].filter(artist => artist !== artistName);
         await saveArtists();
         updateArtistLists();
-        syncArtists();
+        syncArtists(); // Sync after removing an artist
     }
 
     let syncInterval;
 
     function startSync() {
-        syncArtists();
-        syncInterval = setInterval(syncArtists, 10000);
+        syncArtists(); // Immediate sync
+        syncInterval = setInterval(syncArtists, 10000); // Sync every 10 seconds
     }
 
     function stopSync() {
@@ -544,12 +506,11 @@
         }
 
         updateCountdown();
-        setInterval(updateCountdown, 1000 * 60 * 60);
+        setInterval(updateCountdown, 1000 * 60 * 60); // Update countdown every hour
 
         initializeDayBreakdown();
-        syncArtists().then(() => {
-            startSync();
-        });
+        fetchArtistsWithRetry(); // Initial fetch of artists
+        startSync(); // Start syncing
 
         window.addEventListener('online', startSync);
         window.addEventListener('offline', stopSync);
@@ -563,6 +524,7 @@
         });
     });
 
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
